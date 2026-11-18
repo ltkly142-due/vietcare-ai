@@ -4,22 +4,43 @@ VietCare AI là giải pháp số hóa toàn diện quy trình tiếp nhận, ph
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Chạy Ứng Dụng (Dành Cho Windows)
+## 🚀 Hướng Dẫn Cài Đặt & Chạy Ứng Dụng (JetBrains PyCharm)
 
 ### Bước 1: Yêu cầu chuẩn bị
 - Cài đặt **Python 3.10 hoặc 3.11** từ [python.org](https://www.python.org/).
-- ⚠️ **Lưu ý quan trọng**: Trong quá trình cài đặt, nhớ tích chọn ô **`Add python.exe to PATH`**.
+- Cài đặt **JetBrains PyCharm** và mở thư mục dự án (`File → Open`).
 
-### Bước 2: Cài đặt tự động (Chỉ làm 1 lần)
-- Nhấp đúp chuột vào file **`1_cai_dat.bat`**
-- Chương trình sẽ tự động tạo môi trường ảo `venv` và cài đặt toàn bộ thư viện cần thiết.
+### Bước 2: Tạo môi trường ảo (Chỉ làm 1 lần)
+- Vào `Settings → Project → Python Interpreter → Add Interpreter → Add Local Interpreter`.
+- Chọn **Virtualenv Environment → New**, đặt thư mục là `.venv` trong dự án, Base interpreter là Python 3.10/3.11.
 
-### Bước 3: Khởi chạy ứng dụng
-- Nhấp đúp chuột vào file **`2_chay_app.bat`**
-- Hệ thống sẽ tự động bật server và mở trình duyệt tại địa chỉ: `http://127.0.0.1:8000`
+### Bước 3: Cài thư viện và cấu hình (Chỉ làm 1 lần)
+Mở **Terminal** trong PyCharm (môi trường `.venv` được kích hoạt sẵn) và chạy:
+```bash
+pip install -r requirements.txt
+```
+Sao chép file `.env.example` thành `.env` (chuột phải → Copy/Paste, đổi tên), rồi điền các khóa cần dùng (Gemini, Gmail, Twilio). Dự án đã kèm sẵn CSDL mẫu `vietcare.db`.
 
-### Bước 4: Cập nhật code mới (Khi có bản cập nhật)
-- Nhấp đúp chuột vào file **`3_cap_nhat.bat`** để tự động kéo code mới nhất về máy.
+### Bước 4: Khởi chạy ứng dụng
+- Vào `Run → Edit Configurations → + → Python`.
+- Đổi **Script path** thành **Module name** và nhập `uvicorn`.
+- **Script parameters**: `backend.app.main:app --reload --host 127.0.0.1 --port 8000`
+- **Working directory**: thư mục gốc của dự án.
+- Bấm **Run**, sau đó mở trình duyệt tại `http://127.0.0.1:8000`. Tài liệu API ở `http://127.0.0.1:8000/docs`.
+
+Hoặc chạy trực tiếp trong Terminal của PyCharm:
+```bash
+python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Bước 5: Cập nhật code mới
+- Dùng `Git → Pull` trong PyCharm để lấy code mới nhất.
+- Nếu `requirements.txt` có thay đổi, chạy lại `pip install -r requirements.txt` trong Terminal.
+
+### Chạy kiểm thử
+```bash
+python -m unittest discover -s backend/tests
+```
 
 ---
 
@@ -41,8 +62,8 @@ Nhân viên đăng nhập ở tab **Nhân viên** bằng mật khẩu. Khách h�
 > **Chỉ dùng tài khoản OTP khi thật sự cần, để dành cho buổi demo.**
 
 **Tài khoản dev (không cần OTP):** nhập số `0900000000` ở tab *Khách hàng* là vào thẳng, không gửi SMS nên không tốn lượt Twilio. Tài khoản có sẵn 6 sản phẩm: còn hạn, sắp hết hạn và đã hết hạn. Nếu máy chưa có tài khoản này, tạo bằng lệnh:
-```powershell
-.\venv\Scripts\python.exe -m backend.scripts.seed_dev_account
+```bash
+python -m backend.scripts.seed_dev_account
 ```
 Danh sách số bỏ qua OTP nằm ở `OTP_BYPASS_PHONES` trong `.env`, nhiều số cách nhau bằng dấu phẩy. Đặt `OTP_BYPASS_PHONES=""` để tắt.
 
@@ -58,8 +79,8 @@ Danh sách số bỏ qua OTP nằm ở `OTP_BYPASS_PHONES` trong `.env`, nhiều
 3. Thêm số của các thành viên demo vào **Phone Numbers → Verified Caller IDs** (tối đa 5 số, số đăng ký đã có sẵn).
 4. Điền vào file `.env`: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` (trang chủ Console) và `TWILIO_VERIFY_SERVICE_SID`, rồi khởi động lại app.
 5. Gán số thật cho một khách hàng mẫu để nhận SMS:
-   ```powershell
-   .\venv\Scripts\python.exe -m backend.scripts.set_customer_phone 0905123456 09xxxxxxxx
+   ```bash
+   python -m backend.scripts.set_customer_phone 0905123456 09xxxxxxxx
    ```
 
 Giới hạn bản dùng thử: 30 ngày, 40 lượt xác thực, 100 SMS, nội dung tin theo mẫu của Twilio. Mỗi số phải chờ 30 giây mới gửi lại được mã. Mã có hiệu lực 5 phút.
@@ -78,9 +99,9 @@ Mỗi khi phiếu được tạo hoặc đổi trạng thái (xác minh, phân c
    SMTP_PASSWORD="abcdefghijklmnop"
    EMAILS_FROM_EMAIL="tenban@gmail.com"
    ```
-4. Gửi thử: `.\venv\Scripts\python.exe -m backend.scripts.test_email email_nhan@gmail.com`
+4. Gửi thử: `python -m backend.scripts.test_email email_nhan@gmail.com`
 5. Gán email thật cho khách mẫu để nhận thông báo, ví dụ tài khoản dev:
-   `.\venv\Scripts\python.exe -m backend.scripts.set_customer_email 0900000000 email_nhan@gmail.com`
+   `python -m backend.scripts.set_customer_email 0900000000 email_nhan@gmail.com`
 6. Khởi động lại app.
 
 > [!WARNING]
